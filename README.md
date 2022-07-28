@@ -1,1 +1,2 @@
-"# vue-study" 
+- pnpm init
+- 
