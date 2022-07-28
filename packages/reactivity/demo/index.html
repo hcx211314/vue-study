@@ -15,19 +15,22 @@
 
   <script>
     const { effect, reactive } = VueReactivity;
-    const data = {
-      count: 0
-    }
-    const state = reactive(data);
-    const state1 = reactive(state);
-    console.log(state === state)
-    effect(()=> {
-      app.innerHTML = state.count;
-    })
+    // const data = {
+    //   count: 0
+    // }
+    // const state = reactive(data);
+    // const state1 = reactive(state);
+    // console.log(state === state)
+    // effect(()=> {
+    //   app.innerHTML = state.count;
+    // })
 
-    setTimeout(() => {
-      state.count++
-    }, 1000);
+    // setTimeout(() => {
+    //   state.count++
+    // }, 1000);
+
+
+    
 
   </script>
 
