@@ -28,9 +28,20 @@
     // setTimeout(() => {
     //   state.count++
     // }, 1000);
-
-
     
+    const state = reactive({ flag: true, name: 'zhangSan', age: 12 })
+
+    effect(() => {
+      console.log('render')
+      app.innerHTML = state.flag ? state.name : state.age
+    })
+    setTimeout(() => {
+      state.flag = false;
+      setTimeout(() => {
+        console.log('修改name， 原则上不更新')
+        state.name = 'lisi';
+      }, 1000);
+    }, 1000);
 
   </script>
 

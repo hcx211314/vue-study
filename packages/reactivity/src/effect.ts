@@ -1,6 +1,14 @@
 
 export let activeEffect = undefined;
 
+function clearupEffect(effect){
+  const { deps } = effect; // deps is a Set 里面装的是name对应的effect
+  for(let i = 0; i < deps.length; i++) {
+    deps[i].delete(effect); // 接触effect，重新收集依赖
+  }
+  effect.deps.length = 0;
+}
+
 class ReactiveEffect {
   public parent = undefined;
   public deps = []
@@ -16,6 +24,10 @@ class ReactiveEffect {
     try {
       this.parent = activeEffect
       activeEffect = this;
+
+      // 这里我们需要在执行用户函数之前收集的内容清空
+      clearupEffect(this)
+
       this.fn(); // 当稍后调用取值操作的时候，就可以获取到这个全局的activeEffect了
     } finally {
       activeEffect = this.parent;
@@ -61,11 +73,14 @@ export function trigger(target, type, key, newValue, oldValue) {
   if(!depsMap) { // 触发的值不在模板中使用
     return
   }
-  const effects = depsMap.get(key)
-  effects && effects.forEach(effect => {
-    // 我们在执行effect的时候，又要执行自己，那么我们需要屏蔽掉自己
-    if(effect !== activeEffect) {
-      effect.run()
-    }
-  })
+  let effects = depsMap.get(key)
+  if(effects) {
+    effects = new Set(effects)
+    effects.forEach(effect => {
+      // 我们在执行effect的时候，又要执行自己，那么我们需要屏蔽掉自己
+      if(effect !== activeEffect) {
+        effect.run()
+      }
+    })
+  }
 }
