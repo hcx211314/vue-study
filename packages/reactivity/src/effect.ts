@@ -13,7 +13,7 @@ class ReactiveEffect {
   public parent = undefined;
   public deps = []
   public active = true; // 这个effect默认激活
-  constructor(public fn) {// 用户传递的参数也会放到this上
+  constructor(public fn, public scheduler) {// 用户传递的参数也会放到this上
 
   }
   run() {
@@ -34,14 +34,25 @@ class ReactiveEffect {
     }
     
   }
+
+  stop() {
+    if(this.active) {
+      this.active = false
+      clearupEffect(this) // 停止effect的收集
+    }
+  }
 }
 
 
 
 
-export function effect(fn) {
-  const _effect = new ReactiveEffect(fn); // 创建响应式的effect
+export function effect(fn, options:any = {}) {
+  const _effect = new ReactiveEffect(fn, options.scheduler); // 创建响应式的effect
   _effect.run(); // 默认执行一次
+
+  const runner = _effect.run.bind(_effect); // 绑定this执行
+  runner.effect = _effect;  //effect挂载到runner上
+  return runner
 }
 
 
@@ -79,7 +90,11 @@ export function trigger(target, type, key, newValue, oldValue) {
     effects.forEach(effect => {
       // 我们在执行effect的时候，又要执行自己，那么我们需要屏蔽掉自己
       if(effect !== activeEffect) {
-        effect.run()
+        if(effect.scheduler) { // 如果用户传入了自己的，就调用自己的
+          effect.scheduler(effect) 
+        } else {
+          effect.run()
+        }
       }
     })
   }
